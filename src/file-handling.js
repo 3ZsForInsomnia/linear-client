@@ -6,14 +6,27 @@ const configLocation = `${homedir}${sep}.config${sep}linear-client`;
 const configFile = "config";
 const config = `${configLocation}${sep}${configFile}`;
 
-export const createConfigFolderIfNotExists = () => {
+const createConfigFile = (apiKey) => writeFileSync(config, `API_KEY=${apiKey}`);
+
+export const createConfigFolderIfNotExists = (apiKey) => {
+  if (!apiKey) console.error("You must provide an API key to bootstrap!");
+
   if (!existsSync(config)) {
+    console.log("Creating config folder and file...");
     mkdirSync(configLocation);
-    writeFileSync(config, "export API_KEY=");
-    console.log("Your config file is now ready! Add your API key!");
-    return true;
+    createConfigFile(apiKey);
+  } else if (!existsSync(configLocation)) {
+    console.log("Creating config file...");
+    createConfigFile(apiKey);
+  } else {
+    const existingApiKey = readConfigFile("API_KEY");
+    if (!existingApiKey) {
+      console.log(
+        "Config file found but no API_KEY present. Recreating config file with API key...",
+      );
+      createConfigFile(apiKey);
+    } else console.log("API key already exists. Continuing...");
   }
-  return false;
 };
 
 const linesToKeep = (file, key) =>

@@ -5,6 +5,8 @@ import { hideBin } from "yargs/helpers";
 
 import clipboard from "clipboardy";
 
+import { main } from "./src/bootstrap.js";
+
 import {
   getLastSelectedTicket,
   getLastSelectedUser,
@@ -17,6 +19,13 @@ import {
   getAssignedTasks,
   checkoutBranchForTicket,
 } from "./src/commands.js";
+
+const isBootstrapping = process.argv[2] === "bootstrap";
+if (isBootstrapping) {
+  const apiKey = process.argv[3];
+  main(apiKey);
+  process.exit(0);
+}
 
 const { users, client, myUserID } = prep();
 

@@ -7,13 +7,7 @@ import {
 
 const getVar = (lines, search) => lines.find((line) => line.startsWith(search));
 
-const writeDotEnv = async (users, userId) => {
-  const wasFolderCreated = createConfigFolderIfNotExists();
-  if (wasFolderCreated) {
-    // User needs to re-run with the API key populated in ~/.config/linear-client/config
-    return;
-  }
-
+const writeDotEnv = async (userId, users) => {
   const currentDotEnvContents = readConfigFile().split("\n");
 
   const apiKeyLine = getVar(currentDotEnvContents, "export API_KEY");
@@ -59,10 +53,16 @@ export const bootstrap = async (client) => {
   const { id } = await client.viewer;
   const users = await getUsers(client.client);
 
-  writeDotEnv(users, id);
+  if (!id || !users) {
+    console.error("Was unable to retrieve a userId and/or users! Exiting...");
+    process.exit(1);
+  }
+
+  writeDotEnv(id, users);
 };
 
 export const main = async (apiKey) => {
+  createConfigFolderIfNotExists();
   const client = getNormalClient(apiKey);
 
   bootstrap(client);

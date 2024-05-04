@@ -1,19 +1,21 @@
 import { readConfigFile } from "./file-handling.js";
 import { getLinearClient } from "./linear-client.js";
 
+const bootstrapText = " Have you bootstrapped linear-client?";
+
 export const prep = () => {
   const apiKey = readConfigFile("API_KEY");
   const myUserID = readConfigFile("MY_USER_ID");
   let users = readConfigFile("USERS");
 
   if (!apiKey) {
-    throw new Error("API_KEY is missing");
+    throw new Error("API_KEY is missing" + bootstrapText);
   }
   if (!myUserID) {
-    throw new Error("MY_USER_ID is missing");
+    throw new Error("API_KEY is missing" + bootstrapText);
   }
   if (!users) {
-    throw new Error("USERS is missing");
+    throw new Error("API_KEY is missing" + bootstrapText);
   } else {
     users = JSON.parse(users);
   }

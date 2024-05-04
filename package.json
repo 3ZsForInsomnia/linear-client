@@ -1,6 +1,6 @@
 {
-  "name": "linear-client",
-  "version": "1.0.0",
+  "name": "@3zs4insomnia/linear-client",
+  "version": "1.0.1",
   "description": "Linear Client for Funsies",
   "bin": "index.js",
   "type": "module",
