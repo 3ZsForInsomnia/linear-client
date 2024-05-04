@@ -3,8 +3,6 @@
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 
-import "dotenv/config";
-
 import clipboard from "clipboardy";
 
 import {
@@ -16,7 +14,7 @@ import { prep } from "./src/prep.js";
 import {
   createBranchForTicket,
   getAssignedTasks,
-  getBranchForTicket,
+  checkoutBranchForTicket,
 } from "./src/commands.js";
 
 const { users, client, myUserID } = prep();
@@ -30,9 +28,11 @@ const sendResultsToClipBoard = (results) => {
 const handleResults = (func, args) => (argv) =>
   argv.c ? sendResultsToClipBoard(func(args)) : emitResults(func(args));
 
-const getUserThenRunCommand = (command, ...args) => {
-  const userId = JSON.parse(selectUser(users)).id;
-  return command(...args, userId);
+const getUserThenRunCommand = async (command, ...args) => {
+  const user = await selectUser(users);
+  const userId = JSON.parse(user).id;
+
+  return await command(...args, userId);
 };
 
 const handleProvidedTicketOrUseLastTicket = (yargs) => {
@@ -80,7 +80,7 @@ const argv = yargs(hideBin(process.argv))
     ["get-branch-for-task", "get-branch", "gb"],
     "Get the branch associated with a ticket",
     handleProvidedTicketOrUseLastTicket,
-    handleResults(getUserThenRunCommand(getBranchForTicket, client)),
+    handleResults(getUserThenRunCommand(checkoutBranchForTicket, client)),
   )
   .command(
     ["create-branch-for-task", "create-branch", "cb"],

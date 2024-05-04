@@ -1,13 +1,14 @@
 import { sep } from "path";
-import { readFileSync, writeFileSync, existsSync, mkDirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { homedir } from "os";
 
-const configLocation = `~${sep}.config${sep}linear-client`;
+const configLocation = `${homedir}${sep}.config${sep}linear-client`;
 const configFile = "config";
 const config = `${configLocation}${sep}${configFile}`;
 
 export const createConfigFolderIfNotExists = () => {
   if (!existsSync(config)) {
-    mkDirSync(configLocation);
+    mkdirSync(configLocation);
     writeFileSync(config, 'export API_KEY=""');
     console.log("Your config file is now ready! Add your API key!");
     return true;
@@ -15,28 +16,37 @@ export const createConfigFolderIfNotExists = () => {
   return false;
 };
 
-export const writeConfigFile = (contents) => {
-  writeFileSync(config, contents);
+const linesToKeep = (file, key) =>
+  readFileSync(file, "utf-8")
+    .split("\n")
+    .filter((line) => !line.includes(key));
+
+export const writeConfigFile = (key, contents) => {
+  const lines = linesToKeep(config, key);
+  const newLine = `${key}=${contents}`;
+
+  writeFileSync(config, [...lines, newLine].join("\n"));
 };
 
-export const readConfigFile = () => {
-  return readFileSync(config, "utf-8");
-};
+export const readConfigFile = (key) =>
+  readFileSync(config, "utf-8")
+    .split("\n")
+    .find((line) => line.includes(key))
+    .split("=")[1];
 
-const dataLocation = `~${sep}.cache${sep}linear-client`;
+const dataLocation = `${homedir}${sep}.cache${sep}linear-client`;
 const dataFile = "data";
 const data = `${dataLocation}${sep}${dataFile}`;
 
 export const writeKeyInDataFile = (key, contents) => {
-  const lines = readFileSync(data, "utf-8").split("\n");
-  const linesToKeep = lines.filter((line) => !line.includes(key));
+  const lines = linesToKeep(data, key);
   const newLine = `${key}=${contents}`;
 
-  writeFileSync(data, [...linesToKeep, newLine].join("\n"));
+  writeFileSync(data, [...lines, newLine].join("\n"));
 };
 
-export const readKeyFromDataFile = (key) => {
-  const lines = readFileSync(data, "utf-8").split("\n");
-  const line = lines.find((line) => line.includes(key));
-  return line.split("=")[1];
-};
+export const readKeyFromDataFile = (key) =>
+  readFileSync(data, "utf-8")
+    .split("\n")
+    .find((line) => line.includes(key))
+    .split("=")[1];

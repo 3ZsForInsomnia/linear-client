@@ -1,6 +1,6 @@
 import { exec } from "child_process";
 import select from "@inquirer/select";
-import { convertTicketToOption } from "./last-selected";
+import { convertTicketToOption } from "./last-selected.js";
 
 const execWrapper = (commandToRun) => {
   exec(commandToRun, (err, stdout) => {

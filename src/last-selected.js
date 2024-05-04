@@ -1,5 +1,5 @@
 import select from "@inquirer/select";
-import { readKeyFromDataFile, writeKeyInDataFile } from "./file-handling";
+import { readKeyFromDataFile, writeKeyInDataFile } from "./file-handling.js";
 
 const convertUserToOption = (user) => ({
   name: user.displayName,

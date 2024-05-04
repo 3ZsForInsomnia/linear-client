@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-import "dotenv/config";
-
 import { main } from "./src/bootstrap.js";
+import { readConfigFile } from "./src/file-handling.js";
 
-const apiKey = process.env.API_KEY;
+const apiKey = readConfigFile("API_KEY");
 
 if (!apiKey) {
   console.error("API_KEY is missing");

@@ -1,11 +1,10 @@
+import { readConfigFile } from "./file-handling.js";
 import { getLinearClient } from "./linear-client.js";
 
 export const prep = () => {
-  const apiKey = process.env.API_KEY;
-
-  const myUserID = process.env.MY_USER_ID;
-
-  let users = process.env.USERS;
+  const apiKey = readConfigFile("API_KEY");
+  const myUserID = readConfigFile("MY_USER_ID");
+  let users = readConfigFile("USERS");
 
   if (!apiKey) {
     throw new Error("API_KEY is missing");
