@@ -1,11 +1,20 @@
-import { readFileSync, writeFileSync } from "fs";
-
 import { getNormalClient } from "./linear-client.js";
+import {
+  createConfigFolderIfNotExists,
+  readConfigFile,
+  writeConfigFile,
+} from "./file-handling.js";
 
 const getVar = (lines, search) => lines.find((line) => line.startsWith(search));
 
 const writeDotEnv = async (users, userId) => {
-  const currentDotEnvContents = readFileSync(".env", "utf8").split("\n");
+  const wasFolderCreated = createConfigFolderIfNotExists();
+  if (wasFolderCreated) {
+    // User needs to re-run with the API key populated in ~/.config/linear-client/config
+    return;
+  }
+
+  const currentDotEnvContents = readConfigFile().split("\n");
 
   const apiKeyLine = getVar(currentDotEnvContents, "export API_KEY");
 
@@ -22,7 +31,7 @@ const writeDotEnv = async (users, userId) => {
     export USERS=${stringifiedUsers}
   `;
 
-  writeFileSync(".env", text);
+  writeConfigFile(text);
 };
 
 const getUsers = async (client) => {

@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from "fs";
 import select from "@inquirer/select";
+import { readKeyFromDataFile, writeKeyInDataFile } from "./file-handling";
 
 const convertUserToOption = (user) => ({
   name: user.displayName,
@@ -13,7 +13,7 @@ export const selectUser = async (users, props) => {
     choices: users.map(convertUserToOption),
   });
 
-  writeFileSync(".selected-user", rawUser);
+  writeKeyInDataFile("LAST_USER", rawUser);
 
   if (!props.p || (props.p && props.p.includes("a"))) return rawUser;
   else {
@@ -35,17 +35,17 @@ export const convertTicketToOption = (ticket) => ({
 });
 
 export const getLastSelectedUser = () =>
-  JSON.parse(readFileSync(".selected-user")).id;
+  JSON.parse(readKeyFromDataFile("LAST_USER"));
 
-export const selectTicket = async (tickets, props) => {
+export const selectTicket = async (tickets) => {
   const rawTicket = await select({
     message: "Select a ticket!",
     choices: tickets.map(convertTicketToOption),
   });
 
-  writeFileSync(".selected-ticket", rawTicket);
+  writeKeyInDataFile("LAST_TICKET", rawTicket);
   return rawTicket;
 };
 
 export const getLastSelectedTicket = () =>
-  JSON.parse(readFileSync(".selected-ticket"));
+  JSON.parse(readKeyFromDataFile("LAST_TICKET"));
