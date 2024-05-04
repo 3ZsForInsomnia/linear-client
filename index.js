@@ -25,14 +25,16 @@ const sendResultsToClipBoard = (results) => {
   emitResults(results);
 };
 
-const handleResults = (func, args) => (argv) =>
-  argv.c ? sendResultsToClipBoard(func(args)) : emitResults(func(args));
+const handleResults = async (func, argv, ...args) =>
+  argv.c
+    ? sendResultsToClipBoard(await func(argv, ...args))
+    : emitResults(await func(argv, ...args));
 
-const getUserThenRunCommand = async (command, ...args) => {
-  const user = await selectUser(users);
+const getUserThenRunCommand = async (command, argv, ...args) => {
+  const user = await selectUser(argv, users);
   const userId = JSON.parse(user).id;
 
-  return await command(...args, userId);
+  return await command(userId, argv, ...args);
 };
 
 const handleProvidedTicketOrUseLastTicket = (yargs) => {
@@ -74,68 +76,72 @@ const argv = yargs(hideBin(process.argv))
           "i for ID, n for Name, e for email, a for all",
       });
     },
-    handleResults(selectUser, users),
+    async (argv) => await handleResults(selectUser, argv, users),
   )
   .command(
     ["get-branch-for-task", "get-branch", "gb"],
     "Get the branch associated with a ticket",
     handleProvidedTicketOrUseLastTicket,
-    handleResults(getUserThenRunCommand(checkoutBranchForTicket, client)),
+    async (argv) => await handleResults(checkoutBranchForTicket, argv, client),
   )
   .command(
     ["create-branch-for-task", "create-branch", "cb"],
     "Create a branch for the ticket ID provided",
     handleProvidedTicketOrUseLastTicket,
-    handleResults(getUserThenRunCommand(createBranchForTicket, client)),
+    async (argv) => await handleResults(createBranchForTicket, client, argv),
   )
-  .command(
-    ["get-my-tickets", "my-tasks", "tasks"],
-    "Get my assigned tickets",
-    (yargs) => {
-      yargs.option("filter", {
-        alias: "f",
-        desc: "Filter by open tickets, closed tickets, or both. Defaults to open tickets only",
-        choices: ["open", "closed", "both"],
-      });
-    },
-    handleResults(getAssignedTasks, client, myUserID),
-  )
-  .command(
-    ["get-users-tickets", "user-tasks"],
-    "Get tickets assigned to another user",
-    (yargs) => {
-      yargs.option("user_id", {
-        alias: "i",
-        describe:
-          "OPTIONAL: ID of the user you wish to get the tickets of. If not provided, will be prompted to select a user",
-        type: "string",
-      });
-      yargs.option("last-user", {
-        alias: "l",
-        desc: "Use the ID of the last user selected in the current command",
-        type: "boolean",
-        handler: (argv) => {
-          argv.user_id = getLastSelectedUser();
-          return argv;
-        },
-      });
-      yargs.check((argv) => {
-        if (argv.user_id && argv.l) {
-          throw new Error("Please provide only one of user_id or last-user");
-        } else if (!argv.user_id && !argv.l) {
-          throw new Error("Please provide a user_id or use last-user");
-        }
-        return true;
-      });
-
-      yargs.option("filter", {
-        alias: "f",
-        desc: "Filter by open tickets, closed tickets, or both. Defaults to open tickets only",
-        choices: ["open", "closed", "both"],
-      });
-    },
-    handleResults(getUserThenRunCommand(getAssignedTasks, client, argv.filter)),
-  )
+  // .command(
+  //   ["get-my-tickets", "my-tasks", "tasks"],
+  //   "Get my assigned tickets",
+  //   (yargs) => {
+  //     yargs.option("filter", {
+  //       alias: "f",
+  //       desc: "Filter by open tickets, closed tickets, or both. Defaults to open tickets only",
+  //       choices: ["open", "closed", "both"],
+  //     });
+  //   },
+  //   async () => await handleResults(getAssignedTasks, client, myUserID),
+  // )
+  // .command(
+  //   ["get-users-tickets", "user-tasks"],
+  //   "Get tickets assigned to another user",
+  //   (yargs) => {
+  //     yargs.option("user_id", {
+  //       alias: "i",
+  //       describe:
+  //         "OPTIONAL: ID of the user you wish to get the tickets of. If not provided, will be prompted to select a user",
+  //       type: "string",
+  //     });
+  //     yargs.option("last-user", {
+  //       alias: "l",
+  //       desc: "Use the ID of the last user selected in the current command",
+  //       type: "boolean",
+  //       handler: (argv) => {
+  //         argv.user_id = getLastSelectedUser();
+  //         return argv;
+  //       },
+  //     });
+  //     yargs.check((argv) => {
+  //       if (argv.user_id && argv.l) {
+  //         throw new Error("Please provide only one of user_id or last-user");
+  //       } else if (!argv.user_id && !argv.l) {
+  //         throw new Error("Please provide a user_id or use last-user");
+  //       }
+  //       return true;
+  //     });
+  //
+  //     yargs.option("filter", {
+  //       alias: "f",
+  //       desc: "Filter by open tickets, closed tickets, or both. Defaults to open tickets only",
+  //       choices: ["open", "closed", "both"],
+  //     });
+  //   },
+  //   (argv) => console.log("argv", argv),
+  //   async (argv) =>
+  //     await handleResults(
+  //       getUserThenRunCommand(getAssignedTasks, client, argv),
+  //     ),
+  // )
   .demandCommand()
   .option("copy-to-clipboard", {
     alias: "c",

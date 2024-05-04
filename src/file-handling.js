@@ -9,7 +9,7 @@ const config = `${configLocation}${sep}${configFile}`;
 export const createConfigFolderIfNotExists = () => {
   if (!existsSync(config)) {
     mkdirSync(configLocation);
-    writeFileSync(config, 'export API_KEY=""');
+    writeFileSync(config, "export API_KEY=");
     console.log("Your config file is now ready! Add your API key!");
     return true;
   }

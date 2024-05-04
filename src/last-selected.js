@@ -7,7 +7,7 @@ const convertUserToOption = (user) => ({
   description: user.email,
 });
 
-export const selectUser = async (users, props) => {
+export const selectUser = async (argv, users) => {
   const rawUser = await select({
     message: "Select a user!",
     choices: users.map(convertUserToOption),
@@ -15,14 +15,14 @@ export const selectUser = async (users, props) => {
 
   writeKeyInDataFile("LAST_USER", rawUser);
 
-  if (!props.p || (props.p && props.p.includes("a"))) return rawUser;
+  if (!argv.p || (argv.p && argv.p.includes("a"))) return rawUser;
   else {
     const user = JSON.parse(rawUser);
     const obj = {};
 
-    if (props.includes("i")) obj.id = user.id;
-    if (props.includes("e")) obj.email = user.email;
-    if (props.includes("n")) obj.name = user.displayName;
+    if (argv.includes("i")) obj.id = user.id;
+    if (argv.includes("e")) obj.email = user.email;
+    if (argv.includes("n")) obj.name = user.displayName;
 
     return JSON.stringify(obj, null, 2);
   }

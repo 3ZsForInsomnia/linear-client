@@ -1,25 +1,23 @@
-import { exec } from "child_process";
+import { execSync } from "child_process";
 import select from "@inquirer/select";
 import { convertTicketToOption } from "./last-selected.js";
 
 const execWrapper = (commandToRun) => {
-  exec(commandToRun, (err, stdout) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    return stdout;
-  });
+  try {
+    execSync(commandToRun);
+  } catch (e) {
+    return e;
+  }
 };
 
 const createBranch = (branchName) =>
   execWrapper(`git checkout -b ${branchName}`);
 
 const checkoutBranch = (branchName) =>
-  execWrapper(`git checkout ${branchName}`);
+  execWrapper(`git checkout origin/${branchName}`);
 
 const getBranchForTicket = async (client, ticket) => {
-  const issue = await client.rawRequest(`
+  const response = await client.rawRequest(`
     query getBranch {
       issues(filter: {number: { eq: ${ticket} }}) {
         nodes {
@@ -28,27 +26,46 @@ const getBranchForTicket = async (client, ticket) => {
         }
       }
     }
-  `).data.issues.nodes[0];
+  `);
+
+  const issue = response.data.issues.nodes[0];
 
   return issue.branchName;
 };
 
-export const createBranchForTicket = (client, userId) => {
-  const ticket = selectTaskFromAssigned(client, userId);
-  const branch = getBranchForTicket(ticket);
+export const createBranchForTicket = async (client, argv) => {
+  const {
+    ticket_id: ticketId,
+    last_ticket: lastTicket,
+    user_id: userId,
+  } = argv;
+  if (ticketId) return await getBranchByTicket(client, ticketId, createBranch);
+  else if (lastTicket)
+    return await getBranchByTicket(client, lastTicket, createBranch);
 
-  createBranch(branch);
+  const ticket = await selectTaskFromAssigned(client, userId);
+  return await getBranchByTicket(client, ticket, createBranch);
+};
 
+const getBranchByTicket = async (client, ticketId, branchCommand) => {
+  const branch = await getBranchForTicket(client, ticketId);
+  branchCommand(branch);
   return branch;
 };
 
-export const checkoutBranchForTicket = (client, userId) => {
-  const ticket = selectTaskFromAssigned(client, userId);
-  const branch = getBranchForTicket(ticket);
+export const checkoutBranchForTicket = async (argv, client) => {
+  const {
+    ticket_id: ticketId,
+    last_ticket: lastTicket,
+    user_id: userId,
+  } = argv;
+  if (ticketId)
+    return await getBranchByTicket(client, ticketId, checkoutBranch);
+  else if (lastTicket)
+    return await getBranchByTicket(client, lastTicket, checkoutBranch);
 
-  checkoutBranch(branch);
-
-  return branch;
+  const ticket = await selectTaskFromAssigned(client, userId);
+  return await getBranchByTicket(client, ticket, checkoutBranch);
 };
 
 const getIssues = (resp) => resp.data.user.assignedIssues.nodes;
