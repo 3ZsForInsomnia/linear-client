@@ -78,32 +78,34 @@ const flatten = (issueNode) => ({
 const createFilter = (filter) => {
   if (!filter || filter === "both") return "";
   if (filter === "open")
-    return "filter: { and: [ { state: { type: { neq: 'completed' } } } { state: { type: { neq: 'canceled' } } } ] }";
+    return "(filter: { and: [ { state: { type: { neq: 'completed' } } } { state: { type: { neq: 'canceled' } } } ] })";
   else if (filter === "closed")
-    return "filter: { and: [ { state: { type: { eq: 'completed' } } } { state: { type: { eq: 'canceled' } } } ] }";
+    return "(filter: { and: [ { state: { type: { eq: 'completed' } } } { state: { type: { eq: 'canceled' } } } ] })";
 };
 
-export const getAssignedTasks = async (client, userId, filter) => {
+export const getAssignedTasks = async (argv, client, userId) => {
+  const { filter } = argv;
   const response = await client.rawRequest(
     `
     query searchIssues {
-    user(id: "${userId}") {
-      assignedIssues(${createFilter(filter)}) {
-        nodes {
-          title
-          branchName
-          attachments {
-            nodes {
-              url
+      user(id: "${userId}") {
+        assignedIssues${createFilter(filter)} {
+          nodes {
+            id
+            title
+            branchName
+            attachments {
+              nodes {
+                url
+              }
             }
-          }
-          state {
-            name
+            state {
+              name
+            }
           }
         }
       }
     }
-  }
   `,
   );
   return getIssues(response).map(flatten);

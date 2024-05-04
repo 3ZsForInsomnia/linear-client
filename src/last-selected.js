@@ -29,15 +29,15 @@ export const selectUser = async (argv, users) => {
 };
 
 export const convertTicketToOption = (ticket) => ({
-  name: ticket.number,
+  name: ticket.title,
   value: JSON.stringify(ticket),
-  description: ticket.title,
+  description: ticket.number,
 });
 
 export const getLastSelectedUser = () =>
   JSON.parse(readKeyFromDataFile("LAST_USER"));
 
-export const selectTicket = async (tickets) => {
+export const selectTicket = async (_, tickets) => {
   const rawTicket = await select({
     message: "Select a ticket!",
     choices: tickets.map(convertTicketToOption),
