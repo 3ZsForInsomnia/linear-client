@@ -10,8 +10,10 @@ const execWrapper = (commandToRun) => {
   }
 };
 
-const createBranch = (branchName) =>
+const createBranch = (branchName) => {
   execWrapper(`git checkout -b ${branchName}`);
+  execWrapper(`git push --set-upstream origin ${branchName}`);
+};
 
 const checkoutBranch = (branchName) =>
   execWrapper(`git checkout origin/${branchName}`);
