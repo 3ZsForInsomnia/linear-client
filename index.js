@@ -52,8 +52,8 @@ const handleResults = async (func, argv, ...args) => {
 const handleProvidedTicketOrUseLastTicket = (yargs) => {
   yargs.positional("ticket_id", {
     alias: "t",
-    describe: 'ID of the ticket to get the branch for (e.g. "123" in "hed-123"',
-    type: "number",
+    describe: 'ID of the ticket to get the branch for (e.g. "hed-123")',
+    type: "string",
   });
   yargs.option("last-ticket", {
     alias: "lt",

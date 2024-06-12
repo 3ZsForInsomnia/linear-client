@@ -19,16 +19,15 @@ const checkoutBranch = (branchName) =>
 const getBranchForTicket = async (client, ticket) => {
   const response = await client.rawRequest(`
     query getBranch {
-      issues(filter: {number: { eq: ${ticket} }}) {
+      searchIssues(term: "${ticket}") {
         nodes {
-          title
           branchName
         }
       }
     }
   `);
 
-  const issue = response.data.issues.nodes[0];
+  const issue = response.data.searchIssues.nodes[0];
 
   return issue.branchName;
 };
@@ -91,16 +90,29 @@ export const getAssignedTasks = async (argv, client, userId) => {
       user(id: "${userId}") {
         assignedIssues${createFilter(filter)} {
           nodes {
-            id
             title
             branchName
+            description
+            id
+            priority
+            dueDate
+            estimate
+            url
+            project {
+              name
+            }
+            cycle {
+              startsAt
+              endsAt
+              number
+            }
+            state {
+              name
+            }
             attachments {
               nodes {
                 url
               }
-            }
-            state {
-              name
             }
           }
         }
